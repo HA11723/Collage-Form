@@ -44,75 +44,44 @@ export const handler = async (event) => {
       });
 
       bb.on("finish", async () => {
-  console.log("✅ Fields received:", fields);
-  console.log("✅ Files received:", files.map(f => `${f.name} (${f.filename})`));
+        console.log("✅ Fields received:", fields);
+        console.log("✅ Files received:", files.map(f => `${f.name} (${f.filename})`));
 
-  const signatureFile = files.find((f) => f.name === "signature" || f.filename === "signature.png");
+        const signatureFile = files.find(
+          (f) => f.name === "signature" || f.filename === "signature.png"
+        );
 
-  if (!signatureFile) {
-    console.error("❌ Missing signature file");
-    return resolve({
-      statusCode: 400,
-      body: JSON.stringify({ success: false, error: "Missing signature" }),
-    });
-  }
-
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: process.env.EMAIL_RECEIVER,
-    subject: "הרשמה חדשה למכללת אופק טירה",
-    html: `
-      <p><strong>שם פרטי:</strong> ${fields.firstName}</p>
-      <p><strong>שם משפחה:</strong> ${fields.lastName}</p>
-      <p><strong>תעודת זהות:</strong> ${fields.idNumber}</p>
-      <p><strong>מין:</strong> ${fields.gender}</p>
-      <p><strong>טלפון:</strong> ${fields.phone}</p>
-      <p><strong>מסלול:</strong> ${fields.program}</p>
-      <p><strong>חתימה:</strong><br><img src="cid:signature" width="200"/></p>
-    `,
-    attachments: [
-      ...files.filter(f => f.name !== "signature").map(f => ({
-        filename: f.filename,
-        content: f.content,
-        contentType: f.contentType,
-      })),
-      {
-        filename: "signature.png",
-        content: signatureFile.content,
-        contentType: signatureFile.contentType,
-        cid: "signature",
-      },
-    ],
-  };
-
-  try {
-    await transporter.sendMail(mailOptions);
-    console.log("✅ Email sent successfully");
-    resolve({ statusCode: 200, body: JSON.stringify({ success: true }) });
-  } catch (error) {
-    console.error("❌ Failed to send email:", error);
-    resolve({ statusCode: 500, body: JSON.stringify({ success: false, error: error.message }) });
-  }
-});
-
-        const otherFiles = files.filter(f => f.name !== "signature");
+        if (!signatureFile) {
+          console.error("❌ Missing signature file");
+          return resolve({
+            statusCode: 400,
+            body: JSON.stringify({ success: false, error: "Missing signature" }),
+          });
+        }
 
         const mailOptions = {
           from: process.env.EMAIL_USER,
           to: process.env.EMAIL_RECEIVER,
-          subject: "הרשמה חדשה",
+          subject: "הרשמה חדשה למכללת אופק טירה",
           html: `
             <p><strong>שם פרטי:</strong> ${fields.firstName}</p>
-            …
-            <p><strong>חתימה:</strong><br><img src="cid:signature" width="200"/></p>`,
+            <p><strong>שם משפחה:</strong> ${fields.lastName}</p>
+            <p><strong>תעודת זהות:</strong> ${fields.idNumber}</p>
+            <p><strong>מין:</strong> ${fields.gender}</p>
+            <p><strong>טלפון:</strong> ${fields.phone}</p>
+            <p><strong>מסלול:</strong> ${fields.program}</p>
+            <p><strong>חתימה:</strong><br><img src="cid:signature" width="200"/></p>
+          `,
           attachments: [
-            ...otherFiles.map(f => ({
-              filename: f.filename,
-              content: f.content,
-              contentType: f.contentType,
-            })),
+            ...files
+              .filter((f) => f.name !== "signature")
+              .map((f) => ({
+                filename: f.filename,
+                content: f.content,
+                contentType: f.contentType,
+              })),
             {
-              filename: signatureFile.filename,
+              filename: "signature.png",
               content: signatureFile.content,
               contentType: signatureFile.contentType,
               cid: "signature",
@@ -120,14 +89,29 @@ export const handler = async (event) => {
           ],
         };
 
-        await transporter.sendMail(mailOptions);
-        resolve({ statusCode: 200, body: JSON.stringify({ success: true }) });
+        try {
+          await transporter.sendMail(mailOptions);
+          console.log("✅ Email sent successfully");
+          resolve({
+            statusCode: 200,
+            body: JSON.stringify({ success: true }),
+          });
+        } catch (error) {
+          console.error("❌ Failed to send email:", error);
+          resolve({
+            statusCode: 500,
+            body: JSON.stringify({ success: false, error: error.message }),
+          });
+        }
       });
 
       bb.end(rawBody);
     });
   } catch (err) {
-    console.error("Error sending:", err);
-    return { statusCode: 500, body: JSON.stringify({ success: false, error: err.message }) };
+    console.error("❌ Handler failed:", err);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ success: false, error: err.message }),
+    };
   }
 };
