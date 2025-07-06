@@ -172,9 +172,11 @@ fetch("/.netlify/functions/sendEmail", {
   })
     .then((res) => res.json())
     .then((data) => {
-      if (data.success) {
-        errorMsg.style.color = "green";
-        errorMsg.textContent = "✅ הטופס נשלח בהצלחה!";
+      
+   if (data.success) {
+  window.open("/success.html", "_blank"); // Open in new tab
+
+
       } else {
         errorMsg.textContent = "⚠️ שגיאה בשליחה.";
       }
