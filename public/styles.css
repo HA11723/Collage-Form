@@ -19,7 +19,7 @@ body {
 }
 
 .title-box {
-    background-color: #a4d0ff;
+    background-color: #5690a9;
     padding: 20px;
     border-radius: 8px;
     text-align: center;
@@ -60,7 +60,7 @@ input, select {
 
 input:focus, select:focus {
     outline: none;
-    border-color: #a4d0ff;
+    border-color: #5690a9;
     box-shadow: 0 0 5px rgba(164, 208, 255, 0.3);
 }
 
@@ -72,7 +72,7 @@ input[type="radio"] {
 }
 
 .btn {
-    background-color: #a4d0ff;
+    background-color: #5690a9;
     color: white;
     padding: 12px;
     border: none;
@@ -85,7 +85,7 @@ input[type="radio"] {
 }
 
 .btn:hover {
-    background-color: #007bff;
+    background-color: #5690a9;
     transform: translateY(-1px);
 }
 
@@ -121,7 +121,7 @@ canvas {
 
 /* Agreement box styling */
 .agreement-box {
-    background-color: #a4d0ff;
+    background-color: #5690a9;
     padding: 15px;
     border-radius: 8px;
     color: white;
@@ -151,7 +151,7 @@ canvas {
     padding: 20px;
     border-radius: 8px;
     margin: 20px 0;
-    border-left: 4px solid #a4d0ff;
+    border-left: 4px solid #5690a9;
 }
 
 .commitment-section h3, .cancellation-section h3 {
@@ -189,7 +189,7 @@ canvas {
 }
 
 .refund-table th {
-    background-color: #a4d0ff;
+    background-color: #5690a9;
     color: white;
     font-weight: bold;
 }
