@@ -1,16 +1,15 @@
 import nodemailer from "nodemailer";
-import multer from "multer";
 import { buffer } from "micro";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-// Create transport
+// Setup Gmail transporter
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: process.env.MAIL_USER,
-    pass: process.env.MAIL_PASS,
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
   },
 });
 
@@ -20,21 +19,22 @@ export const handler = async (event) => {
       return { statusCode: 405, body: "Method Not Allowed" };
     }
 
-    const boundary = event.headers["content-type"].split("boundary=")[1];
+    const contentType = event.headers["content-type"];
+    const boundary = contentType.split("boundary=")[1];
     const rawBody = Buffer.from(event.body, "base64");
 
-    // Use `busboy` or a multipart parser to extract form-data
-    const busboy = await import("busboy");
-    const bb = busboy.default({ headers: { "content-type": event.headers["content-type"] } });
+    const busboy = (await import("busboy")).default;
+    const bb = busboy({ headers: { "content-type": contentType } });
 
     const fields = {};
     const files = [];
 
     return new Promise((resolve, reject) => {
       bb.on("field", (name, val) => (fields[name] = val));
+
       bb.on("file", (name, file, info) => {
         const buffers = [];
-        file.on("data", d => buffers.push(d));
+        file.on("data", (data) => buffers.push(data));
         file.on("end", () => {
           files.push({
             filename: info.filename,
@@ -45,9 +45,19 @@ export const handler = async (event) => {
       });
 
       bb.on("finish", async () => {
+        // Find the signature file
+        const signatureFile = files.find((f) => f.filename === "signature.png");
+
+        if (!signatureFile) {
+          return resolve({
+            statusCode: 400,
+            body: JSON.stringify({ success: false, error: "Missing signature" }),
+          });
+        }
+
         const mailOptions = {
-          from: process.env.MAIL_USER,
-          to: process.env.MAIL_TO,
+          from: process.env.EMAIL_USER,
+          to: process.env.EMAIL_RECEIVER,
           subject: "הרשמה חדשה למכללת אופק טירה",
           html: `
             <p><strong>שם פרטי:</strong> ${fields.firstName}</p>
@@ -59,30 +69,36 @@ export const handler = async (event) => {
             <p><strong>חתימה:</strong><br><img src="cid:signature" width="200"/></p>
           `,
           attachments: [
-            ...files.map(f => ({
+            // All other files except the signature
+            ...files.filter(f => f.filename !== "signature.png").map(f => ({
               filename: f.filename,
               content: f.content,
               contentType: f.contentType,
             })),
+            // Signature file (inline)
             {
               filename: "signature.png",
-              content: files.find(f => f.filename === "signature.png")?.content,
+              content: signatureFile.content,
+              contentType: signatureFile.contentType,
               cid: "signature",
             },
           ],
         };
 
         await transporter.sendMail(mailOptions);
-        resolve({ statusCode: 200, body: JSON.stringify({ success: true }) });
+        resolve({
+          statusCode: 200,
+          body: JSON.stringify({ success: true }),
+        });
       });
 
       bb.end(rawBody);
     });
-  } catch (error) {
-    console.error("Error:", error);
+  } catch (err) {
+    console.error("❌ Error sending email:", err);
     return {
       statusCode: 500,
-      body: JSON.stringify({ success: false, error: error.message }),
+      body: JSON.stringify({ success: false, error: err.message }),
     };
   }
 };
