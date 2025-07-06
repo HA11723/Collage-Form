@@ -128,10 +128,14 @@
             קראתי הכל ואני מאשר/ת
           </label>
         </div>
+         <!-- File Upload -->
+      <label for="idFile">צילום תעודת זהות:</label>
+      <input type="file" id="idFile" name="idFile" accept=".png,.jpg,.jpeg,.pdf,.doc,.docx,.rtf,.bmp,.gif" required />
 
-        <label>חתימה:</label>
-        <canvas id="signature-pad" width="350" height="120"></canvas>
-        <button type="button" class="clear-button" onclick="clearSignature()">
+    <label>חתימה:</label>
+      <canvas id="signature-pad" width="300" height="100"></canvas>
+      <button type="button" class="clear-button" onclick="clearSignature()">נקה חתימה</button>
+
           נקה חתימה
         </button>
 
