@@ -4,7 +4,8 @@
   "type": "module",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",            // Starts the Node.js server
+    "build": "echo 'No build process required'" // Dummy build command, as there's no build process for a backend app
   },
   "dependencies": {
     "body-parser": "^2.2.0",
