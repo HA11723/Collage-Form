@@ -165,7 +165,7 @@ form.addEventListener("submit", function (event) {
   submitButton.textContent = "שולח...";
   submitButton.disabled = true;
 
-  fetch("/send-email", {
+fetch("/.netlify/functions/sendEmail", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(formData),
