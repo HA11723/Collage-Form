@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="he">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>טופס הרשמה - מכללת אופק טירה</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="form-container">
+      <div class="title-box">
+        <img src="/logo2.png" alt="לוגו מכללת אופק טירה" width="250" />
+        <h2>טופס הרשמה - מכללת אופק טירה</h2>
+      </div>
+
+      <div id="errorMsg" class="error"></div>
+
+      <form id="registrationForm">
+        <label for="firstName">שם פרטי:</label>
+        <input type="text" id="firstName" name="firstName" required />
+
+        <label for="lastName">שם משפחה:</label>
+        <input type="text" id="lastName" name="lastName" required />
+
+        <label for="idNumber">תעודת זהות:</label>
+        <input
+          type="text"
+          id="idNumber"
+          name="idNumber"
+          maxlength="9"
+          required
+        />
+
+        <label>מין:</label>
+        <div
+          style="
+            display: flex;
+            gap: 30px;
+            align-items: center;
+            direction: rtl;
+            margin-bottom: 15px;
+          "
+        >
+          <label style="display: flex; align-items: center; gap: 5px">
+            <input type="radio" name="gender" value="זכר" required /> זכר
+          </label>
+          <label style="display: flex; align-items: center; gap: 5px">
+            <input type="radio" name="gender" value="נקבה" required /> נקבה
+          </label>
+        </div>
+
+        <label for="phone">מספר טלפון:</label>
+        <input
+          type="tel"
+          id="phone"
+          name="phone"
+          pattern="^05[0-9]{8}$"
+          placeholder="05XXXXXXXX"
+          required
+        />
+
+        <label for="program">מסלול לימוד:</label>
+        <select id="program" name="program" required>
+          <option value="">בחר מסלול</option>
+          <option value="תואר ראשון">תואר ראשון</option>
+          <option value="קורס יועץ מס">קורס יועץ מס</option>
+          <option value="קורס חשבונאות משולב">קורס חשבונאות משולב</option>
+          <option value="קורס סייעות רוקחות">קורס סייעות רוקחות</option>
+          <option value="קורס מזכירה רפואית">קורס מזכירה רפואית</option>
+          <option value="סייעות לגיל הרך וחינוך מיוחד">
+            סייעות לגיל הרך וחינוך מיוחד
+          </option>
+          <option value="קורס גרפיקה משולב">קורס גרפיקה משולב</option>
+          <option value="קורס צילום">קורס צילום</option>
+          <option value="קורס מדריכה באומנות">קורס מדריכה באומנות</option>
+          <option value="קורס טכנאי מזגנים">קורס טכנאי מזגנים</option>
+          <option value="קורס עיצוב והפקת אירועים">
+            קורס עיצוב והפקת אירועים
+          </option>
+          <option value="קורס סייעות לרופא שיניים">
+            קורס סייעות לרופא שיניים
+          </option>
+          <option value="קורס עברית מדוברת">קורס עברית מדוברת</option>
+        </select>
+
+        <!-- כתב התחייבות לתשלום שכר לימוד -->
+        <div class="commitment-section">
+          <h3>כתב התחייבות לתשלום שכר לימוד</h3>
+          <p class="declaration-text">
+            *הריני מתחייב לעמוד בהסדר התשלומים של שכר הלימוד במלואו, ולהקפיד על
+            התשלומים במועדים הקבועים לכך.
+          </p>
+          <p class="declaration-text">
+            *החזרי כסף למפסיקי לימודים יהיו לפי תקנון המכללה.
+          </p>
+          <p class="declaration-text">*דמי רישום אינם מוחזרים.</p>
+        </div>
+
+        <!-- נוהל הפסקת לימודים -->
+        <div class="cancellation-section">
+          <h3>נוהל הפסקת לימודים:</h3>
+          <p class="declaration-text">*הפסקת לימודים תעשה במזכירות המכללה.</p>
+
+          <h4>מדיניות החזר כספי</h4>
+          <table class="refund-table">
+            <thead>
+              <tr>
+                <th>תקופת ביטול</th>
+                <th>אחוז ההחזר הכספי</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>עד שבועיים לפני תחילת הלימודים</td>
+                <td>50% מיתרת שכר הלימוד</td>
+              </tr>
+              <tr>
+                <td>עד השבוע הראשון</td>
+                <td>אין החזר כספי</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- הסכמה -->
+        <div class="agreement-box">
+          <label>
+            <input type="checkbox" id="agreement" required />
+            קראתי הכל ואני מאשר/ת
+          </label>
+        </div>
+
+        <label>חתימה:</label>
+        <canvas id="signature-pad" width="350" height="120"></canvas>
+        <button type="button" class="clear-button" onclick="clearSignature()">
+          נקה חתימה
+        </button>
+
+        <br /><br />
+        <button type="submit" class="btn">הרשם</button>
+      </form>
+    </div>
+
+    <!-- ✅ Your main JS logic (script.js) -->
+    <script src="/script.js"></script>
+  </body>
+</html>
