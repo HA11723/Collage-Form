@@ -4,10 +4,7 @@
   "scripts": {
     "build": "echo 'No build step required'"
   },
-  "type": "module",
   "dependencies": {
-    "nodemailer": "^7.0.4",
-    "busboy": "^1.6.0",
-    "dotenv": "^16.3.1"
+    "nodemailer": "^7.0.4"
   }
 }
