@@ -1,56 +1,88 @@
-// 📁 netlify/functions/sendEmail.js
 import nodemailer from "nodemailer";
+import multer from "multer";
+import { buffer } from "micro";
+import dotenv from "dotenv";
 
-export async function handler(event) {
-  if (event.httpMethod !== "POST") {
-    return {
-      statusCode: 405,
-      body: "Method Not Allowed",
-    };
-  }
+dotenv.config();
 
+// Create transport
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.MAIL_USER,
+    pass: process.env.MAIL_PASS,
+  },
+});
+
+export const handler = async (event) => {
   try {
-    const data = JSON.parse(event.body);
-    const { firstName, lastName, idNumber, gender, phone, program, signature } =
-      data;
+    if (event.httpMethod !== "POST") {
+      return { statusCode: 405, body: "Method Not Allowed" };
+    }
 
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
+    const boundary = event.headers["content-type"].split("boundary=")[1];
+    const rawBody = Buffer.from(event.body, "base64");
+
+    // Use `busboy` or a multipart parser to extract form-data
+    const busboy = await import("busboy");
+    const bb = busboy.default({ headers: { "content-type": event.headers["content-type"] } });
+
+    const fields = {};
+    const files = [];
+
+    return new Promise((resolve, reject) => {
+      bb.on("field", (name, val) => (fields[name] = val));
+      bb.on("file", (name, file, info) => {
+        const buffers = [];
+        file.on("data", d => buffers.push(d));
+        file.on("end", () => {
+          files.push({
+            filename: info.filename,
+            content: Buffer.concat(buffers),
+            contentType: info.mimeType,
+          });
+        });
+      });
+
+      bb.on("finish", async () => {
+        const mailOptions = {
+          from: process.env.MAIL_USER,
+          to: process.env.MAIL_TO,
+          subject: "הרשמה חדשה למכללת אופק טירה",
+          html: `
+            <p><strong>שם פרטי:</strong> ${fields.firstName}</p>
+            <p><strong>שם משפחה:</strong> ${fields.lastName}</p>
+            <p><strong>תעודת זהות:</strong> ${fields.idNumber}</p>
+            <p><strong>מין:</strong> ${fields.gender}</p>
+            <p><strong>טלפון:</strong> ${fields.phone}</p>
+            <p><strong>מסלול:</strong> ${fields.program}</p>
+            <p><strong>חתימה:</strong><br><img src="cid:signature" width="200"/></p>
+          `,
+          attachments: [
+            ...files.map(f => ({
+              filename: f.filename,
+              content: f.content,
+              contentType: f.contentType,
+            })),
+            {
+              filename: "signature.png",
+              content: files.find(f => f.filename === "signature.png")?.content,
+              cid: "signature",
+            },
+          ],
+        };
+
+        await transporter.sendMail(mailOptions);
+        resolve({ statusCode: 200, body: JSON.stringify({ success: true }) });
+      });
+
+      bb.end(rawBody);
     });
-
-    const mailOptions = {
-      from: `\u05D8\u05D5\u05E4\u05E1 \u05D4\u05E8\u05E9\u05DE\u05D4 <${process.env.EMAIL_USER}>`,
-      to: process.env.EMAIL_RECEIVER,
-      subject:
-        "\uD83D\uDCDD \u05D8\u05D5\u05E4\u05E1 \u05D4\u05E8\u05E9\u05DE\u05D4 \u05D7\u05D3\u05E9 - \u05DE\u05DB\u05DC\u05DC\u05EA \u05D0\u05D5\u05E4\u05E7 \u05D8\u05D9\u05E8\u05D4",
-      html: `
-        <h2>\uD83D\uDCCB \u05E4\u05E8\u05D8\u05D9 \u05D8\u05D5\u05E4\u05E1</h2>
-        <p><strong>\u05E9\u05DD \u05E4\u05E8\u05D8\u05D9:</strong> ${firstName}</p>
-        <p><strong>\u05E9\u05DD \u05DE\u05E9\u05E4\u05D7\u05D4:</strong> ${lastName}</p>
-        <p><strong>\u05EA.\u05D6:</strong> ${idNumber}</p>
-        <p><strong>\u05DE\u05D9\u05DF:</strong> ${gender}</p>
-        <p><strong>\u05D8\u05DC\u05E4\u05D5\u05DF:</strong> ${phone}</p>
-        <p><strong>\u05DE\u05E1\u05DC\u05D5\u05DC:</strong> ${program}</p>
-        <p><strong>\u05D7\u05EA\u05D9\u05DE\u05D4:</strong></p>
-        <img src="${signature}" width="300" style="border: 1px solid #ccc;" />
-      `,
-    };
-
-    await transporter.sendMail(mailOptions);
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ success: true, message: "Email sent" }),
-    };
   } catch (error) {
-    console.error("Error sending email:", error);
+    console.error("Error:", error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ success: false, message: "Server error" }),
+      body: JSON.stringify({ success: false, error: error.message }),
     };
   }
-}
+};
