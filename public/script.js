@@ -4,10 +4,12 @@ const ctx = canvas.getContext("2d");
 const errorMsg = document.getElementById("errorMsg");
 let isDrawing = false;
 
+// Canvas setup
 ctx.strokeStyle = "#000";
 ctx.lineWidth = 2;
 ctx.lineCap = "round";
 
+// Mouse events
 canvas.addEventListener("mousedown", e => {
   isDrawing = true;
   ctx.beginPath();
@@ -22,7 +24,7 @@ canvas.addEventListener("mousemove", e => {
 canvas.addEventListener("mouseup", () => (isDrawing = false));
 canvas.addEventListener("mouseleave", () => (isDrawing = false));
 
-// Touch
+// Touch events
 canvas.addEventListener("touchstart", e => {
   e.preventDefault();
   isDrawing = true;
@@ -55,13 +57,24 @@ function clearSignature() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
-form.addEventListener("submit", async function (event) {
+// Form submission
+form.addEventListener("submit", function (event) {
   event.preventDefault();
   errorMsg.textContent = "";
 
   const formData = new FormData(form);
 
-  // Add signature image (blob)
+  // Check if signature is empty
+  const blank = document.createElement("canvas");
+  blank.width = canvas.width;
+  blank.height = canvas.height;
+  const blankSignature = blank.toDataURL();
+  if (canvas.toDataURL() === blankSignature) {
+    errorMsg.textContent = "אנא חתום בטופס לפני השליחה.";
+    return;
+  }
+
+  // Add signature as PNG blob
   canvas.toBlob(blob => {
     formData.append("signature", blob, "signature.png");
 
@@ -80,7 +93,7 @@ form.addEventListener("submit", async function (event) {
         }
       })
       .catch(err => {
-        console.error("Error:", err);
+        console.error("❌ Error sending:", err);
         errorMsg.textContent = "⚠️ שגיאה בשליחה לשרת.";
       });
   }, "image/png");
