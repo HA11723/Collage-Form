@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
+import XLSX from "xlsx";
 
 dotenv.config();
 
@@ -67,6 +68,37 @@ export const handler = async (event) => {
           });
         }
 
+        // Create Excel file with form data
+        const excelData = [
+          {
+            "תאריך הרשמה": new Date().toLocaleString("he-IL"),
+            "שם פרטי": fields.firstName || "",
+            "שם משפחה": fields.lastName || "",
+            "תעודת זהות": fields.idNumber || "",
+            מין: fields.gender || "",
+            טלפון: fields.phone || "",
+            מסלול: fields.program || "",
+            "הסכמה לתנאים": fields.agreement ? "כן" : "לא",
+            "קבצים מצורפים": files
+              .filter((f) => f.name !== "signature")
+              .map((f) => f.filename)
+              .join(", "),
+          },
+        ];
+
+        const workbook = XLSX.utils.book_new();
+        const worksheet = XLSX.utils.json_to_sheet(excelData);
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Registrations");
+
+        // Generate Excel file buffer
+        const excelBuffer = XLSX.write(workbook, {
+          type: "buffer",
+          bookType: "xlsx",
+        });
+        const fileName = `registration_${
+          new Date().toISOString().split("T")[0]
+        }_${Date.now()}.xlsx`;
+
         const mailOptions = {
           from: process.env.EMAIL_USER,
           to: process.env.EMAIL_RECEIVER,
@@ -84,6 +116,12 @@ export const handler = async (event) => {
             <p><strong>חתימה:</strong><br><img src="cid:signature" width="200"/></p>
           `,
           attachments: [
+            {
+              filename: fileName,
+              content: excelBuffer,
+              contentType:
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            },
             ...files
               .filter((f) => f.name !== "signature")
               .map((f) => ({
