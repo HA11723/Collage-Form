@@ -120,21 +120,28 @@
             </tbody>
           </table>
         </div>
-  <!-- File Upload -->
-      <label for="idFile">צילום תעודת זהות:</label>
-      <input type="file" id="idFile" name="idFile" accept=".png,.jpg,.jpeg,.pdf,.doc,.docx,.rtf,.bmp,.gif" required />
+        <!-- File Upload -->
+        <label for="idFile">צילום תעודת זהות:</label>
+        <input
+          type="file"
+          id="idFile"
+          name="idFile"
+          accept=".png,.jpg,.jpeg,.pdf,.doc,.docx,.rtf,.bmp,.gif"
+          required
+        />
         <!-- הסכמה -->
         <div class="agreement-box">
           <label>
-            <input type="checkbox" id="agreement" required />
+            <input type="checkbox" id="agreement" name="agreement" required />
             קראתי הכל ואני מאשר/ת
           </label>
         </div>
-       
 
-    <label>חתימה:</label>
-      <canvas id="signature-pad" width="300" height="100"></canvas>
-      <button type="button" class="clear-button" onclick="clearSignature()">נקה חתימה</button>
+        <label>חתימה:</label>
+        <canvas id="signature-pad" width="300" height="100"></canvas>
+        <button type="button" class="clear-button" onclick="clearSignature()">
+          נקה חתימה
+        </button>
 
         <br /><br />
         <button type="submit" class="btn">הרשם</button>
