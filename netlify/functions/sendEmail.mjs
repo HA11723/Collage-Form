@@ -20,7 +20,9 @@ export const handler = async (event) => {
     const rawBody = Buffer.from(event.body, "base64");
     const contentType = event.headers["content-type"];
     const busboyModule = await import("busboy");
-    const bb = busboyModule.default({ headers: { "content-type": contentType } });
+    const bb = busboyModule.default({
+      headers: { "content-type": contentType },
+    });
 
     const fields = {};
     const files = [];
@@ -45,7 +47,10 @@ export const handler = async (event) => {
 
       bb.on("finish", async () => {
         console.log("✅ Fields received:", fields);
-        console.log("✅ Files received:", files.map(f => `${f.name} (${f.filename})`));
+        console.log(
+          "✅ Files received:",
+          files.map((f) => `${f.name} (${f.filename})`)
+        );
 
         const signatureFile = files.find(
           (f) => f.name === "signature" || f.filename === "signature.png"
@@ -55,7 +60,10 @@ export const handler = async (event) => {
           console.error("❌ Missing signature file");
           return resolve({
             statusCode: 400,
-            body: JSON.stringify({ success: false, error: "Missing signature" }),
+            body: JSON.stringify({
+              success: false,
+              error: "Missing signature",
+            }),
           });
         }
 
@@ -70,6 +78,9 @@ export const handler = async (event) => {
             <p><strong>מין:</strong> ${fields.gender}</p>
             <p><strong>טלפון:</strong> ${fields.phone}</p>
             <p><strong>מסלול:</strong> ${fields.program}</p>
+            <p><strong>הסכמה לתנאים:</strong> ${
+              fields.agreement ? "✅ כן" : "❌ לא"
+            }</p>
             <p><strong>חתימה:</strong><br><img src="cid:signature" width="200"/></p>
           `,
           attachments: [
