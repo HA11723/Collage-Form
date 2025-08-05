@@ -4,19 +4,57 @@ import XLSX from "xlsx";
 
 dotenv.config();
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+// Add CORS headers
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
 
+// Handle preflight requests
 export const handler = async (event) => {
+  // Handle CORS preflight
+  if (event.httpMethod === "OPTIONS") {
+    return {
+      statusCode: 200,
+      headers: corsHeaders,
+      body: "",
+    };
+  }
+
   try {
     if (event.httpMethod !== "POST") {
-      return { statusCode: 405, body: "Method Not Allowed" };
+      return {
+        statusCode: 405,
+        headers: corsHeaders,
+        body: "Method Not Allowed",
+      };
     }
+
+    // Check if environment variables are set
+    if (
+      !process.env.EMAIL_USER ||
+      !process.env.EMAIL_PASS ||
+      !process.env.EMAIL_RECEIVER
+    ) {
+      console.error("❌ Missing environment variables");
+      return {
+        statusCode: 500,
+        headers: corsHeaders,
+        body: JSON.stringify({
+          success: false,
+          error: "Server configuration error. Please contact administrator.",
+        }),
+      };
+    }
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
 
     const rawBody = Buffer.from(event.body, "base64");
     const contentType = event.headers["content-type"];
@@ -61,6 +99,7 @@ export const handler = async (event) => {
           console.error("❌ Missing signature file");
           return resolve({
             statusCode: 400,
+            headers: corsHeaders,
             body: JSON.stringify({
               success: false,
               error: "Missing signature",
@@ -143,12 +182,14 @@ export const handler = async (event) => {
           console.log("✅ Email sent successfully");
           resolve({
             statusCode: 200,
+            headers: corsHeaders,
             body: JSON.stringify({ success: true }),
           });
         } catch (error) {
           console.error("❌ Failed to send email:", error);
           resolve({
             statusCode: 500,
+            headers: corsHeaders,
             body: JSON.stringify({ success: false, error: error.message }),
           });
         }
@@ -160,6 +201,7 @@ export const handler = async (event) => {
     console.error("❌ Handler failed:", err);
     return {
       statusCode: 500,
+      headers: corsHeaders,
       body: JSON.stringify({ success: false, error: err.message }),
     };
   }
