@@ -93,9 +93,15 @@ function clearSignature() {
 
 // Show loading state
 function showLoading() {
+  console.log("⏳ Showing loading state");
   if (submitBtn) {
     submitBtn.disabled = true;
+    submitBtn.classList.add("loading");
+    submitBtn.classList.remove("ready");
     submitBtn.textContent = "שולח...";
+    console.log("✅ Button disabled and loading class added");
+  } else {
+    console.log("❌ Submit button not found");
   }
   if (errorMsg) errorMsg.textContent = "";
   if (statusMsg) statusMsg.style.display = "none";
@@ -103,9 +109,14 @@ function showLoading() {
 
 // Hide loading state
 function hideLoading() {
+  console.log("🔄 Hiding loading state");
   if (submitBtn) {
     submitBtn.disabled = false;
+    submitBtn.classList.remove("loading");
     submitBtn.textContent = "הרשם";
+    console.log("✅ Button enabled and loading class removed");
+  } else {
+    console.log("❌ Submit button not found");
   }
 }
 
@@ -137,6 +148,7 @@ function showStatus(message, type = "info") {
 if (form) {
   form.addEventListener("submit", async function (event) {
     event.preventDefault();
+    console.log("🚀 Form submission started");
 
     showLoading();
 
@@ -202,9 +214,16 @@ if (form) {
 // Add form validation feedback
 if (form) {
   form.addEventListener("input", function () {
-    if (submitBtn) {
+    if (submitBtn && !submitBtn.classList.contains("loading")) {
       const isValid = form.checkValidity();
-      submitBtn.disabled = !isValid;
+      // Show ready state when form is valid
+      if (isValid) {
+        submitBtn.classList.add("ready");
+        submitBtn.style.opacity = "1";
+      } else {
+        submitBtn.classList.remove("ready");
+        submitBtn.style.opacity = "0.6";
+      }
     }
   });
 
